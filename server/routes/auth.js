@@ -7,7 +7,7 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-const API_BASE = VITE_API_URL || 'http://localhost:5000';
+const API_BASE = process.env.API_URL || 'http://localhost:5000';
 
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
