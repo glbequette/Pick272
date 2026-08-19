@@ -7,7 +7,7 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-const API_BASE = process.env.API_URL || 'http://localhost:5000';
+const FRONTEND_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
@@ -43,7 +43,7 @@ router.post('/register', async (req, res) => {
     await newUser.save();
 
     // Send the verification email
-    const verificationLink = `${API_BASE}/api/auth/verify/${verificationToken}`;
+    const verificationLink = `${FRONTEND_URL}/verify?token=${verificationToken}`;
     
     await transporter.sendMail({
       from: `"Pick272" <${process.env.EMAIL_USER}>`,
