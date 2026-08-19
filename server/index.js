@@ -23,16 +23,26 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:3000',
   'https://pick272.com',
-  'https://your-frontend-project.vercel.app'
+  'https://www.pick272.com',
+  // Replace with your exact Vercel URL
+  'https://pick272.vercel.app' 
 ];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (like mobile apps, curl, or Postman)
+    if (!origin) return callback(null, true);
+
+    // Allow if exact match in list OR if it is any vercel.app preview URL
+    const isAllowed = allowedOrigins.includes(origin) || origin.endsWith('.vercel.app');
+
+    if (isAllowed) {
       callback(null, true);
     } else {
-      callback(new Error('Blocked by CORS policy'));
+      console.warn(`Blocked origin by CORS: ${origin}`);
+      callback(new Error(`Blocked by CORS policy: ${origin}`));
     }
   },
   credentials: true
