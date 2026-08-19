@@ -41,7 +41,7 @@ router.post('/register', async (req, res) => {
     await newUser.save();
 
     // Send the verification email
-    const verificationLink = `http://localhost:5000/api/auth/verify/${verificationToken}`;
+    const verificationLink = `${API_BASE}/api/auth/verify/${verificationToken}`;
     
     await transporter.sendMail({
       from: `"Pick272" <${process.env.EMAIL_USER}>`,
@@ -79,7 +79,7 @@ router.get('/verify/:token', async (req, res) => {
     await user.save();
 
     // Redirect the user back to your React frontend with a success parameter
-    res.redirect('http://localhost:5173/?verified=true');
+    res.redirect('${API_BASE}/?verified=true');
   } catch (error) {
     res.status(500).send('Server error during verification.');
   }
