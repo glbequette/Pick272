@@ -7,6 +7,8 @@ const User = require('../models/User');
 
 const router = express.Router();
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
   service: 'gmail',
