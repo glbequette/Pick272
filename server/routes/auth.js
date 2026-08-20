@@ -43,10 +43,15 @@ router.post('/register', async (req, res) => {
     try {
       // Re-create the transporter right when you need it!
       const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587, // Standard secure mail submission port
+        secure: false, // true for 465, false for other ports (will use STARTTLS)
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS
+        },
+        tls: {
+          rejectUnauthorized: false // Prevents standard cloud SSL errors
         }
       });
 
