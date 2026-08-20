@@ -48,27 +48,27 @@ router.post('/register', async (req, res) => {
       const verificationLink = `${FRONTEND_URL}/verify?token=${verificationToken}`;
 
       await resend.emails.send({
-        // Change this to your custom domain once it is verified in Resend!
-        from: 'Pick272 <onboarding@resend.dev>', 
-        to: email,
-        subject: 'Welcome to Pick272! Verify your account 🏈',
-        html: `
-          <div style="font-family: Helvetica, Arial, sans-serif; background-color: #0b0f19; color: #f8fafc; padding: 40px 20px; text-align: center; border-radius: 12px; max-width: 600px; margin: 0 auto; border: 1px solid #1e293b;">
-            <h1 style="color: #38bdf8; font-size: 32px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
-              Welcome to Pick272!
-            </h1>
-            <p style="font-size: 18px; color: #94a3b8; margin-bottom: 30px; line-height: 1.5;">
-              You are one step away from locking in your NFL picks. Click the button below to verify your email address and activate your account.
-            </p>
-            <a href="${verificationLink}" style="background-color: #22c55e; color: #0b0f19; padding: 16px 32px; text-decoration: none; font-weight: 800; font-size: 18px; border-radius: 8px; display: inline-block; letter-spacing: 1px;">
-              VERIFY MY ACCOUNT
-            </a>
-            <p style="font-size: 12px; color: #475569; margin-top: 40px;">
-              If you didn't create an account with Pick272, you can safely ignore this email.
-            </p>
-          </div>
-        `
-      });
+      // Change this to your custom domain once it is verified in Resend!
+      from: 'onboarding@resend.dev', 
+      to: email,
+      subject: 'Welcome to Pick272! Verify your account 🏈',
+      html: `
+        <div style="font-family: Helvetica, Arial, sans-serif; background-color: #0b0f19; color: #f8fafc; padding: 40px 20px; text-align: center; border-radius: 12px; max-width: 600px; margin: 0 auto; border: 1px solid #1e293b;">
+          <h1 style="color: #38bdf8; font-size: 32px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
+            Welcome to Pick272!
+          </h1>
+          <p style="font-size: 18px; color: #94a3b8; margin-bottom: 30px; line-height: 1.5;">
+            You are one step away from locking in your NFL picks. Click the button below to verify your email address and activate your account.
+          </p>
+          <a href="${verificationLink}" style="background-color: #22c55e; color: #0b0f19; padding: 16px 32px; text-decoration: none; font-weight: 800; font-size: 18px; border-radius: 8px; display: inline-block; letter-spacing: 1px;">
+            VERIFY MY ACCOUNT
+          </a>
+          <p style="font-size: 12px; color: #475569; margin-top: 40px;">
+            If you didn't create an account with Pick272, you can safely ignore this email.
+          </p>
+        </div>
+      `
+    });
     } catch (emailError) {
       console.error("Resend error:", emailError);
     }
