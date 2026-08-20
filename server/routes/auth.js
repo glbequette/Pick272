@@ -40,23 +40,30 @@ router.post('/register', async (req, res) => {
       password: hashedPassword,
       verificationToken
     });
+
+    // 1. Save user to database first
     await newUser.save();
 
-    // Send the verification email
-    const verificationLink = `${FRONTEND_URL}/verify?token=${verificationToken}`;
-    
-    await transporter.sendMail({
-      from: `"Pick272" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Verify your Pick272 Account',
-      html: `
-        <h2>Welcome to Pick272, ${username}!</h2>
-        <p>Please click the link below to verify your email address and activate your account.</p>
-        <a href="${verificationLink}" style="padding: 10px 20px; background: #22c55e; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">Verify My Account</a>
-      `
-    });
+    // 2. Try sending the email, but catch email errors separately
+    try {
+      const verificationLink = `${FRONTEND_URL}/verify?token=${verificationToken}`;
+      
+      await transporter.sendMail({
+        from: `"Pick272" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Verify your Pick272 Account',
+        html: `
+          <h2>Welcome to Pick272, ${username}!</h2>
+          <p>Please click the link below to verify your email address and activate your account.</p>
+          <a href="${verificationLink}" style="...">Verify My Account</a>
+        `
+      });
+    } catch (emailError) {
+      // This will log the EXACT reason Google is blocking you on Render
+      console.error("Non-fatal email sending error:", emailError);
+    }
 
-    // UPDATED: Added the Spam Folder notification here
+    // 3. Send success response safely no matter what
     res.status(201).json({ 
       message: 'Registration successful! Please check your email (and your Spam folder) to verify your account.' 
     });
