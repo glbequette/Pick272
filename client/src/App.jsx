@@ -33,8 +33,9 @@ export default function App() {
   const currentNFLWeek = 1;
 
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-  <Route path="/verify" element={<VerifyEmail />} />
+  <Routes>
+    <Route path="/verify" element={<VerifyEmail />} />
+  </Routes>
 
   useEffect(() => {
     // Fetch NFL Schedule
