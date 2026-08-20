@@ -9,14 +9,6 @@ const router = express.Router();
 
 const FRONTEND_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
-// Configure Nodemailer
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
 
 // REGISTER A NEW USER
 router.post('/register', async (req, res) => {
@@ -45,7 +37,19 @@ router.post('/register', async (req, res) => {
     await newUser.save();
 
     // 2. Try sending the email, but catch email errors separately
+    // Remove the global transporter at the top of the file, and put it inside your try/catch:
+
+    // 2. Try sending the email, but catch email errors separately
     try {
+      // Re-create the transporter right when you need it!
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
+        }
+      });
+
       const verificationLink = `${FRONTEND_URL}/verify?token=${verificationToken}`;
       
       await transporter.sendMail({
