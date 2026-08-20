@@ -7,6 +7,7 @@ import PlayoffBracket from './components/PlayoffBracket';
 import AccountSettings from './components/AccountSettings';
 import FriendsHub from './components/FriendsHub';
 import { getTeamTheme } from './teamTheme';
+import VerifyEmail from './components/VerifyEmail';
 
 export default function App() {
   const [user, setUser] = useState(() => {
@@ -32,6 +33,8 @@ export default function App() {
   const currentNFLWeek = 1;
 
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  <Route path="/verify" element={<VerifyEmail />} />
 
   useEffect(() => {
     // Fetch NFL Schedule
