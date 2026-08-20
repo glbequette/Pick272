@@ -1,6 +1,3 @@
-const dns = require('dns');
-dns.setServers(['8.8.8.8', '8.8.4.4']);
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -54,7 +51,7 @@ app.use(cors({
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {family : 4})
   .then(() => console.log('Successfully connected to MongoDB!'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
