@@ -9,6 +9,9 @@ const router = express.Router();
 
 const FRONTEND_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY); // Add this key to Render env vars
+
 
 // REGISTER A NEW USER
 router.post('/register', async (req, res) => {
@@ -41,35 +44,17 @@ router.post('/register', async (req, res) => {
 
     // 2. Try sending the email, but catch email errors separately
     try {
-      // Re-create the transporter right when you need it!
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587, // Standard secure mail submission port
-        secure: false, // true for 465, false for other ports (will use STARTTLS)
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-        },
-        tls: {
-          rejectUnauthorized: false // Prevents standard cloud SSL errors
-        }
-      });
-
+      const FRONTEND_URL = process.env.CLIENT_URL || 'http://localhost:5173';
       const verificationLink = `${FRONTEND_URL}/verify?token=${verificationToken}`;
-      
-      await transporter.sendMail({
-        from: `"Pick272" <${process.env.EMAIL_USER}>`,
+
+      await resend.emails.send({
+        from: 'onboarding@resend.dev', // Resend provides a testing email address
         to: email,
         subject: 'Verify your Pick272 Account',
-        html: `
-          <h2>Welcome to Pick272, ${username}!</h2>
-          <p>Please click the link below to verify your email address and activate your account.</p>
-          <a href="${verificationLink}" style="...">Verify My Account</a>
-        `
+        html: `<h2>Welcome to Pick272!</h2><p>Please click the link below to verify your email.</p><a href="${verificationLink}">Verify My Account</a>`
       });
     } catch (emailError) {
-      // This will log the EXACT reason Google is blocking you on Render
-      console.error("Non-fatal email sending error:", emailError);
+      console.error("Resend error:", emailError);
     }
 
     // 3. Send success response safely no matter what
