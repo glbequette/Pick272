@@ -2,7 +2,6 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
 const User = require('../models/User');
 
 // 1. Import and initialize the filter
@@ -86,7 +85,7 @@ router.post('/register', async (req, res) => {
 
     // 3. Send success response safely no matter what
     res.status(201).json({ 
-      message: 'Registration successful! Please check your email (and your Spam folder) to verify your account.' 
+      message: 'Registration successful! Please check your email to verify your account.' 
     });
     
   } catch (err) {
@@ -220,29 +219,26 @@ router.post('/forgot-password', async (req, res) => {
     const FRONTEND_URL = process.env.CLIENT_URL || 'http://localhost:5173';
     const resetLink = `${FRONTEND_URL}/?resetToken=${resetToken}`;
 
-    // Create transporter inside the route (using your existing email credentials)
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
+    try {
+      await resend.emails.send({
+        from: 'Pick272 <noreply@pick272.com>', 
+        to: email,
+        subject: 'Pick272 - Password Reset Request',
+        html: `
+          <div style="font-family: Helvetica, Arial, sans-serif; background-color: #0b0f19; color: #f8fafc; padding: 40px 20px; text-align: center; border-radius: 12px; max-width: 600px; margin: 0 auto; border: 1px solid #1e293b;">
+            <h2 style="color: #38bdf8; text-transform: uppercase;">Password Reset Request</h2>
+            <p style="color: #94a3b8; font-size: 16px; margin-bottom: 24px;">You requested a password reset for your Pick272 account. Click the button below to set a new password. This link will expire in 1 hour.</p>
+            <a href="${resetLink}" style="padding: 14px 28px; background: #22c55e; color: #0b0f19; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">RESET PASSWORD</a>
+            <p style="color: #475569; font-size: 12px; margin-top: 32px;">If you did not request this, please ignore this email.</p>
+          </div>
+        `
+      });
+    } catch (emailError) {
+      console.error("Resend reset password error:", emailError);
+      // We don't crash here so the frontend doesn't hang
+    }
 
-    await transporter.sendMail({
-      from: `"Pick272" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Pick272 - Password Reset Request',
-      html: `
-        <h2>Password Reset Request</h2>
-        <p>You requested a password reset for your Pick272 account.</p>
-        <p>Please click the link below to set a new password. This link will expire in 1 hour.</p>
-        <a href="${resetLink}" style="padding: 10px 20px; background: #38bdf8; color: #0b0f19; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Reset Password</a>
-        <p>If you did not request this, please ignore this email.</p>
-      `
-    });
-
-    res.status(200).json({ message: 'A reset link has been sent to your email.' });
+    res.status(200).json({ message: 'If that email exists, a reset link has been sent.' });
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ error: 'Server error. Please try again later.' });
