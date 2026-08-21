@@ -39,7 +39,7 @@ export default function FriendsHub({ user, onBack }) {
     setMessage(null);
 
     try {
-      const response = await fetch('${API_BASE}/api/friends/add', {
+      const response = await fetch(`${API_BASE}/api/friends/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -158,7 +158,7 @@ export default function FriendsHub({ user, onBack }) {
                 disabled={loading || friendCode.length !== 10} 
                 style={{ padding: '12px', borderRadius: '8px', border: 'none', background: friendCode.length === 10 ? '#a855f7' : '#374151', color: '#f8fafc', fontWeight: '700', fontSize: '14px', cursor: friendCode.length === 6 ? 'pointer' : 'not-allowed', transition: 'background 0.2s' }}
               >
-                {loading ? 'ADDING...' : 'SEND REQUEST'}
+                {loading ? 'ADDING...' : 'ADD FRIEND'}
               </button>
             </form>
           </div>
