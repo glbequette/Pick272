@@ -188,24 +188,25 @@ export default function App() {
     <div style={{ minHeight: '100vh', background: '#0b0f19', color: '#f8fafc' }}>
       
       {/* Broadcast Header */}
-      <header style={{ background: '#111827', borderBottom: '1px solid #1f2937', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 50 }}>
+      <header className="app-header" style={{ background: '#111827', borderBottom: '1px solid #1f2937', padding: '16px 24px', position: 'sticky', top: 0, zIndex: 50 }}>
+        
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => { setActiveLeague(null); setView('dashboard'); }}>
           <h1 style={{ fontFamily: 'Teko, sans-serif', fontSize: '28px', margin: 0, letterSpacing: '1px' }}>PICK</h1>
           <div style={{ background: '#22c55e', color: '#0b0f19', fontFamily: 'Teko, sans-serif', fontSize: '22px', padding: '2px 8px', borderRadius: '4px', fontWeight: '700' }}>272</div>
         </div>
 
         {user && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button onClick={() => { setActiveLeague(null); setView('dashboard'); }} style={{ background: '#1f2937', border: '1px solid #374151', color: '#38bdf8', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+          <div className="header-buttons">
+            <button onClick={() => { setActiveLeague(null); setView('dashboard'); }} style={{ background: '#1f2937', border: '1px solid #374151', color: '#38bdf8', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: '6px 14px' }}>
               Dashboard
             </button>
-            <button onClick={() => { setActiveLeague(null); setView('account'); }} style={{ background: '#1f2937', border: '1px solid #374151', color: '#f8fafc', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+            <button onClick={() => { setActiveLeague(null); setView('account'); }} style={{ background: '#1f2937', border: '1px solid #374151', color: '#f8fafc', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: '6px 14px' }}>
               Account
             </button>
-            <button onClick={() => { setActiveLeague(null); setView('friends'); }} style={{ background: '#1f2937', border: '1px solid #374151', color: '#a855f7', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+            <button onClick={() => { setActiveLeague(null); setView('friends'); }} style={{ background: '#1f2937', border: '1px solid #374151', color: '#a855f7', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: '6px 14px' }}>
               Friends
             </button>
-            <button onClick={handleLogout} style={{ background: '#1f2937', border: '1px solid #374151', color: '#f87171', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+            <button onClick={handleLogout} style={{ background: '#1f2937', border: '1px solid #374151', color: '#f87171', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: '6px 14px' }}>
               Sign Out
             </button>
           </div>

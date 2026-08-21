@@ -22,3 +22,36 @@ nav::-webkit-scrollbar-thumb {
   background: #334155;
   border-radius: 4px;
 }
+
+/* Responsive Header Layout */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Mobile View (Screens smaller than 640px) */
+@media (max-width: 640px) {
+  .app-header {
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+  }
+  
+  .header-buttons {
+    width: 100%;
+    justify-content: center;
+    gap: 8px; /* Tighter gap for narrow screens */
+  }
+  
+  /* Shrinks button padding slightly so all 4 fit on small phones */
+  .header-buttons button {
+    padding: 6px 10px !important;
+  }
+}
