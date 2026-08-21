@@ -4,6 +4,9 @@ const League = require('../models/League');
 const User = require('../models/User');
 const PickSheet = require('../models/PickSheet');
 
+const { Filter } = require('bad-words');
+const filter = new Filter();
+
 const generateInviteCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
@@ -13,6 +16,10 @@ router.post('/create', async (req, res) => {
   try {
     // RESTORED: Added 'nickname' back to the destructured body
     const { name, userId, pickMode, pickVisibility, nickname } = req.body; 
+
+    if (filter.isProfane(nickname)) {
+      return res.status(400).json({ error: 'Please choose a more appropriate username.' });
+    }
     
     let inviteCode = generateInviteCode();
     let isUnique = false;
@@ -58,6 +65,10 @@ router.get('/user/:userId', async (req, res) => {
 router.post('/join', async (req, res) => {
   try {
     const { inviteCode, userId, nickname } = req.body;
+
+    if (filter.isProfane(nickname)) {
+      return res.status(400).json({ error: 'Please choose a more appropriate username.' });
+    }
 
     const league = await League.findOne({ inviteCode: inviteCode.toUpperCase() });
     if (!league) {

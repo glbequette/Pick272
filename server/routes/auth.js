@@ -5,6 +5,10 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
 
+// 1. Import and initialize the filter
+const { Filter } = require('bad-words');
+const filter = new Filter();
+
 const router = express.Router();
 
 const FRONTEND_URL = process.env.CLIENT_URL || 'http://localhost:5173';
@@ -19,6 +23,12 @@ router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
+    // 2. Check the username for profanity before doing anything else
+    if (filter.isProfane(username)) {
+      return res.status(400).json({ error: 'Username not allowed.' });
+    }
+
+    // Check if user already exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
       return res.status(400).json({ error: 'Username or email already in use.' });
