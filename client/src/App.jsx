@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Auth from './components/Auth';
 import LeagueModal from './components/LeagueModal';
 import LeagueStandings from './components/LeagueStandings';
@@ -8,7 +7,6 @@ import PlayoffBracket from './components/PlayoffBracket';
 import AccountSettings from './components/AccountSettings';
 import FriendsHub from './components/FriendsHub';
 import { getTeamTheme } from './teamTheme';
-import VerifyEmail from './components/VerifyEmail';
 
 export default function App() {
   const [user, setUser] = useState(() => {
@@ -21,26 +19,23 @@ export default function App() {
   const [userLeagues, setUserLeagues] = useState([]);
   const [showLeagueModal, setShowLeagueModal] = useState(false);
   const [activeLeague, setActiveLeague] = useState(null);
-  const [totalLeaguesCount, setTotalLeaguesCount] = useState(0); // <-- ADD THIS
+  const [totalLeaguesCount, setTotalLeaguesCount] = useState(0);
   
   // Navigation State
   const [view, setView] = useState('dashboard'); // 'dashboard' | 'picks' | 'standings'
   const [seasonTab, setSeasonTab] = useState('regular'); // 'regular' | 'playoffs'
 
   const [picks, setPicks] = useState({});
-  const [tiebreaker, setTiebreaker] = useState(''); // NEW STATE
+  const [tiebreaker, setTiebreaker] = useState('');
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [submitStatus, setSubmitStatus] = useState(null);
   const currentNFLWeek = 1;
 
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-  <Routes>
-    <Route path="/verify" element={<VerifyEmail />} />
-  </Routes>
 
   useEffect(() => {
-    // Fetch NFL Schedule
-    fetch('${API_BASE}/api/games')
+    // Fetch NFL Schedule (FIXED: Backticks)
+    fetch(`${API_BASE}/api/games`)
       .then((res) => res.json())
       .then((data) => {
         setGames(data);
@@ -51,8 +46,8 @@ export default function App() {
         setLoading(false);
       });
 
-    // NEW: Fetch Total Platform Leagues
-    fetch('${API_BASE}/api/leagues/count')
+    // Fetch Total Platform Leagues (FIXED: Backticks)
+    fetch(`${API_BASE}/api/leagues/count`)
       .then((res) => res.json())
       .then((data) => setTotalLeaguesCount(data.count || 0))
       .catch((err) => console.error('Error fetching league count:', err));
@@ -91,12 +86,10 @@ export default function App() {
     try {
       const res = await fetch(`${API_BASE}/api/picks/${user.id}/${league._id}`);
       const data = await res.json();
-      const loaded = {};
       if (data.picks) {
           const loadedPicks = {};
           data.picks.forEach(p => { loadedPicks[p.gameId] = p.selectedTeam; });
           setPicks(loadedPicks);
-          // NEW: Load their saved tiebreaker
           if (data.tiebreaker) setTiebreaker(data.tiebreaker); 
         }
     } catch (err) {
@@ -105,21 +98,19 @@ export default function App() {
   };
 
   const handleSelectTeam = async (gameId, teamName) => {
-    // 1. Optimistically update the UI and local storage instantly
     const updatedPicks = { ...picks, [gameId]: teamName };
     setPicks(updatedPicks);
     localStorage.setItem('nfl_picks_draft', JSON.stringify(updatedPicks));
 
-    // 2. Auto-save to the database using YOUR actual state variables
-    // Make sure we have both a logged-in user and an active league selected
     if (activeLeague && user) {
       try {
-        const response = await fetch('${API_BASE}/api/picks/submit', {
+        // FIXED: Backticks
+        const response = await fetch(`${API_BASE}/api/picks/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId: user.id, // Using your user object
-            leagueId: activeLeague._id, // THIS WAS THE BUG!
+            userId: user.id, 
+            leagueId: activeLeague._id, 
             picks: updatedPicks,
             isSubmitted: false
           })
@@ -142,7 +133,8 @@ export default function App() {
   const handleLockPicks = async () => {
     setSubmitStatus({ type: 'loading', text: 'Locking picks...' });
     try {
-      const response = await fetch('${API_BASE}/api/picks/submit', {
+      // FIXED: Backticks
+      const response = await fetch(`${API_BASE}/api/picks/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -162,7 +154,6 @@ export default function App() {
     }
   };
 
-  // Helper for Weekly View standings (if missing, returns empty string)
   const getTeamRecord = (team) => {
     return ""; 
   };
@@ -177,7 +168,8 @@ export default function App() {
   const handleTiebreakerSave = async (value) => {
     if (!value || !activeLeague) return;
     try {
-      await fetch('${API_BASE}/api/picks/submit', {
+      // FIXED: Backticks
+      await fetch(`${API_BASE}/api/picks/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -204,23 +196,15 @@ export default function App() {
 
         {user && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            
-            {/* DASHBOARD BUTTON */}
             <button onClick={() => { setActiveLeague(null); setView('dashboard'); }} style={{ background: '#1f2937', border: '1px solid #374151', color: '#38bdf8', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
               Dashboard
             </button>
-
-            {/* ACCOUNT BUTTON */}
             <button onClick={() => { setActiveLeague(null); setView('account'); }} style={{ background: '#1f2937', border: '1px solid #374151', color: '#f8fafc', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
               Account
             </button>
-
-            {/* FRIENDS BUTTON */}
             <button onClick={() => { setActiveLeague(null); setView('friends'); }} style={{ background: '#1f2937', border: '1px solid #374151', color: '#a855f7', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
               Friends
             </button>
-
-            {/* SIGN OUT */}
             <button onClick={handleLogout} style={{ background: '#1f2937', border: '1px solid #374151', color: '#f87171', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
               Sign Out
             </button>
@@ -232,63 +216,38 @@ export default function App() {
         {!user ? (
           <Auth onAuthSuccess={(authenticatedUser) => setUser(authenticatedUser)} />
         ) : view === 'account' ? (
-          
-          /* ACCOUNT SETTINGS VIEW */
-          <AccountSettings 
-            user={user} 
-            setUser={setUser} 
-            onBack={() => setView('dashboard')} 
-          />
-
+          <AccountSettings user={user} setUser={setUser} onBack={() => setView('dashboard')} />
         ) : view === 'friends' ? (
-          
-          <FriendsHub
-            user = {user}
-            onBack={() =>setView('dashboard')}
-          />
-
+          <FriendsHub user={user} onBack={() => setView('dashboard')} />
         ) : view === 'dashboard' ? (
           
-          /* ==================================================
-             1. MAIN DASHBOARD VIEW
-             ================================================== */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-            
             {/* Quick Stats Bar */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
-              
-              {/* 1. Total Platform Leagues */}
               <div style={{ background: '#131c2e', border: '1px solid #1e293b', padding: '16px 20px', borderRadius: '12px' }}>
                 <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', letterSpacing: '0.05em' }}>TOTAL LEAGUES</span>
                 <div style={{ fontFamily: 'Teko, sans-serif', fontSize: '32px', color: '#38bdf8', marginTop: '4px' }}>
                   {totalLeaguesCount}
                 </div>
               </div>
-
-              {/* 2. Current Week */}
               <div style={{ background: '#131c2e', border: '1px solid #1e293b', padding: '16px 20px', borderRadius: '12px' }}>
                 <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', letterSpacing: '0.05em' }}>CURRENT NFL WEEK</span>
                 <div style={{ fontFamily: 'Teko, sans-serif', fontSize: '32px', color: '#22c55e', marginTop: '4px' }}>
                   WEEK {currentNFLWeek}
                 </div>
               </div>
-
-              {/* 3. Games Played */}
               <div style={{ background: '#131c2e', border: '1px solid #1e293b', padding: '16px 20px', borderRadius: '12px' }}>
                 <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', letterSpacing: '0.05em' }}>NFL GAMES PLAYED</span>
                 <div style={{ fontFamily: 'Teko, sans-serif', fontSize: '32px', color: '#fbbf24', marginTop: '4px' }}>
                   {games.filter(g => g.status === 'final').length}
                 </div>
               </div>
-
-              {/* 4. Max Points */}
               <div style={{ background: '#131c2e', border: '1px solid #1e293b', padding: '16px 20px', borderRadius: '12px' }}>
                 <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', letterSpacing: '0.05em' }}>MAX POSSIBLE PTS</span>
                 <div style={{ fontFamily: 'Teko, sans-serif', fontSize: '32px', color: '#a855f7', marginTop: '4px' }}>
                   300 <span style={{ fontSize: '16px', color: '#94a3b8' }}>PTS</span>
                 </div>
               </div>
-
             </div>
 
             {/* My Leagues Section */}
@@ -362,7 +321,6 @@ export default function App() {
               )}
             </div>
 
-            {/* Global Leaderboard Section */}
             <GlobalLeaderboard currentUserId={user.id} />
 
             {showLeagueModal && (
@@ -378,10 +336,6 @@ export default function App() {
           </div>
 
         ) : view === 'standings' ? (
-
-          /* ==================================================
-             2. LEAGUE STANDINGS VIEW
-             ================================================== */
           <LeagueStandings 
             leagueId={activeLeague._id} 
             user={user} 
@@ -392,12 +346,7 @@ export default function App() {
               setView('dashboard');
             }}
           />
-
         ) : (
-
-          /* ==================================================
-             3. PICK SHEET VIEW (Weekly or Season + Bracket)
-             ================================================== */
           <>
             {/* Context Header */}
             <div style={{ background: '#131c2e', border: '1px solid #1e293b', borderRadius: '14px', padding: '20px 24px', marginBottom: '24px' }}>
@@ -424,6 +373,10 @@ export default function App() {
                     <div style={{ width: `${progressPercent}%`, background: 'linear-gradient(90deg, #16a34a, #22c55e)', height: '100%', transition: 'width 0.4s' }} />
                   </div>
                 </div>
+
+                <button onClick={handleLockPicks} disabled={submitStatus?.type === 'loading'} style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color: '#0b0f19', fontWeight: '800', fontFamily: 'Teko, sans-serif', fontSize: '18px', cursor: 'pointer' }}>
+                  {submitStatus?.type === 'loading' ? 'LOCKING...' : 'LOCK PICKS'}
+                </button>
               </div>
 
               {submitStatus && (
@@ -436,7 +389,6 @@ export default function App() {
             {/* SEASON MODE VIEW */}
             {activeLeague.pickMode === 'season' ? (
               <>
-                {/* NEW: Dropdown Week Selector */}
                 <div style={{ position: 'relative', marginBottom: '24px' }}>
                   <select
                     value={seasonTab === 'playoffs' ? 'playoffs' : selectedWeek}
@@ -460,19 +412,17 @@ export default function App() {
                       fontSize: '22px',
                       cursor: 'pointer',
                       outline: 'none',
-                      appearance: 'none', // Hides the default OS dropdown arrow
+                      appearance: 'none', 
                       fontWeight: '700',
                       letterSpacing: '1px'
                     }}
                   >
-                    {/* Regular Season Weeks 1-18 */}
                     {Array.from({ length: 18 }, (_, i) => i + 1).map((weekNum) => (
                       <option key={weekNum} value={weekNum} style={{ color: '#ffffff' }}>
                         WEEK {weekNum}
                       </option>
                     ))}
                     
-                    {/* PLAYOFFS OPTION (Locked until all picks are made) */}
                     <option 
                       value="playoffs" 
                       disabled={totalPicksMade < (games.length || 272)}
@@ -482,13 +432,11 @@ export default function App() {
                     </option>
                   </select>
                   
-                  {/* Custom Dropdown Arrow */}
                   <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: '14px' }}>
                     ▼
                   </div>
                 </div>
 
-                {/* Conditional Rendering: Show Matches or Bracket */}
                 {seasonTab === 'regular' ? (
                   loading ? (
                     <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading schedule data...</div>
@@ -511,33 +459,33 @@ export default function App() {
                             <div style={{ textAlign: 'center', fontSize: '12px', color: '#64748b', fontWeight: '700', letterSpacing: '0.05em' }}>
                               {formattedTime.toUpperCase()}
                             </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '16px' }}>
-                            <button
-                              onClick={() => handleSelectTeam(game.gameId, game.awayTeam)}
-                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', border: selectedTeam === game.awayTeam ? `2px solid ${awayTheme.primary}` : '1px solid #283548', background: selectedTeam === game.awayTeam ? awayTheme.primary : '#0b0f19', color: selectedTeam === game.awayTeam ? awayTheme.text : '#f1f5f9', boxShadow: selectedTeam === game.awayTeam ? `0 0 16px ${awayTheme.primary}80` : 'none' }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <img src={awayTheme.logoUrl} alt={game.awayTeam} style={{ width: '40px', height: '40px', objectFit: 'contain', filter: selectedTeam === game.awayTeam ? 'drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.6))' : 'none' }} />
-                              </div>
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                <span style={{ fontFamily: 'Teko, sans-serif', fontSize: '24px', letterSpacing: '0.5px', lineHeight: '1' }}>{game.awayTeam}</span>
-                              </div>
-                            </button>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '16px' }}>
+                              <button
+                                onClick={() => handleSelectTeam(game.gameId, game.awayTeam)}
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', border: selectedTeam === game.awayTeam ? `2px solid ${awayTheme.primary}` : '1px solid #283548', background: selectedTeam === game.awayTeam ? awayTheme.primary : '#0b0f19', color: selectedTeam === game.awayTeam ? awayTheme.text : '#f1f5f9', boxShadow: selectedTeam === game.awayTeam ? `0 0 16px ${awayTheme.primary}80` : 'none' }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <img src={awayTheme.logoUrl} alt={game.awayTeam} style={{ width: '40px', height: '40px', objectFit: 'contain', filter: selectedTeam === game.awayTeam ? 'drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.6))' : 'none' }} />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                  <span style={{ fontFamily: 'Teko, sans-serif', fontSize: '24px', letterSpacing: '0.5px', lineHeight: '1' }}>{game.awayTeam}</span>
+                                </div>
+                              </button>
 
-                            <div style={{ fontFamily: 'Teko, sans-serif', fontSize: '22px', color: '#475569', fontWeight: '700' }}>@</div>
+                              <div style={{ fontFamily: 'Teko, sans-serif', fontSize: '22px', color: '#475569', fontWeight: '700' }}>@</div>
 
-                            <button
-                              onClick={() => handleSelectTeam(game.gameId, game.homeTeam)}
-                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', border: selectedTeam === game.homeTeam ? `2px solid ${homeTheme.primary}` : '1px solid #283548', background: selectedTeam === game.homeTeam ? homeTheme.primary : '#0b0f19', color: selectedTeam === game.homeTeam ? homeTheme.text : '#f1f5f9', boxShadow: selectedTeam === game.homeTeam ? `0 0 16px ${homeTheme.primary}80` : 'none' }}
-                            >
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                <span style={{ fontFamily: 'Teko, sans-serif', fontSize: '24px', letterSpacing: '0.5px', lineHeight: '1' }}>{game.homeTeam}</span>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <img src={homeTheme.logoUrl} alt={game.homeTeam} style={{ width: '40px', height: '40px', objectFit: 'contain', filter: selectedTeam === game.homeTeam ? 'drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.6))' : 'none' }} />
-                              </div>
-                            </button>
-                          </div>
+                              <button
+                                onClick={() => handleSelectTeam(game.gameId, game.homeTeam)}
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', border: selectedTeam === game.homeTeam ? `2px solid ${homeTheme.primary}` : '1px solid #283548', background: selectedTeam === game.homeTeam ? homeTheme.primary : '#0b0f19', color: selectedTeam === game.homeTeam ? homeTheme.text : '#f1f5f9', boxShadow: selectedTeam === game.homeTeam ? `0 0 16px ${homeTheme.primary}80` : 'none' }}
+                              >
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                  <span style={{ fontFamily: 'Teko, sans-serif', fontSize: '24px', letterSpacing: '0.5px', lineHeight: '1' }}>{game.homeTeam}</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <img src={homeTheme.logoUrl} alt={game.homeTeam} style={{ width: '40px', height: '40px', objectFit: 'contain', filter: selectedTeam === game.homeTeam ? 'drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.6))' : 'none' }} />
+                                </div>
+                              </button>
+                            </div>
                           </div>
                         );
                       })}
@@ -552,7 +500,6 @@ export default function App() {
                       onSelectPlayoffTeam={(gameId, team) => handleSelectTeam(gameId, team)}
                     />
                     
-                    {/* TIEBREAKER INPUT BOX */}
                     <div style={{ marginTop: '24px', background: '#131c2e', padding: '24px', borderRadius: '12px', border: '1px solid #1e293b', textAlign: 'center', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.3)' }}>
                       <h3 style={{ color: '#f59e0b', fontFamily: 'Teko, sans-serif', fontSize: '28px', letterSpacing: '1px', margin: '0 0 8px 0' }}>SEASON TIEBREAKER</h3>
                       <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '16px', maxWidth: '600px', margin: '0 auto 16px auto' }}>
@@ -571,7 +518,6 @@ export default function App() {
                 )}
               </>
             ) : (
-              /* WEEKLY MODE VIEW */
               <div style={{ display: 'grid', gap: '14px' }}>
                 {loading ? (
                   <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>Loading schedule...</div>
