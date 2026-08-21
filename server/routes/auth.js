@@ -8,6 +8,7 @@ const User = require('../models/User');
 const router = express.Router();
 
 const FRONTEND_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY); // Add this key to Render env vars
@@ -44,8 +45,8 @@ router.post('/register', async (req, res) => {
 
     // 2. Try sending the email, but catch email errors separately
     try {
-      const FRONTEND_URL = process.env.CLIENT_URL || 'http://localhost:5173';
-      const verificationLink = `${FRONTEND_URL}/verify?token=${verificationToken}`;
+      const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+      const verificationLink = `${BACKEND_URL}/api/auth/verify/${verificationToken}`;
 
       await resend.emails.send({
       // Change this to your custom domain once it is verified in Resend!
@@ -84,23 +85,31 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// VERIFY EMAIL ENDPOINT
+// VERIFY EMAIL ENDPOINT (Instant Redirect)
 router.get('/verify/:token', async (req, res) => {
+  const FRONTEND_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+
   try {
-    const user = await User.findOne({ verificationToken: req.params.token });
-    
+    const { token } = req.params;
+    const user = await User.findOne({ verificationToken: token });
+
     if (!user) {
-      return res.status(400).send('Invalid or expired verification link.');
+      // If token is invalid, redirect to frontend with an error flag in the URL
+      return res.redirect(`${FRONTEND_URL}?error=invalid_token`);
     }
 
+    // Update user to verified and clear the token
     user.isVerified = true;
-    user.verificationToken = undefined; // Clear the token
+    user.verificationToken = undefined;
     await user.save();
 
-    // Redirect the user back to your React frontend with a success parameter
-    res.redirect('${API_BASE}/?verified=true');
+    // SUCCESS! Redirect straight back to the login page!
+    // We add ?verified=true so your frontend could theoretically show a "Success" popup if you want later
+    res.redirect(`${FRONTEND_URL}?verified=true`);
+
   } catch (error) {
-    res.status(500).send('Server error during verification.');
+    console.error("Verification Error:", error);
+    res.redirect(`${FRONTEND_URL}?error=server_error`);
   }
 });
 
