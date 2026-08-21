@@ -19,6 +19,8 @@ export default function LeagueStandings({ leagueId, user, onBack, onLeaveSuccess
   const [bracketPicksMap, setBracketPicksMap] = useState({});
   const [bracketLoading, setBracketLoading] = useState(false);
 
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   // 1. Fetch Overall Leaderboard
   useEffect(() => {
     fetch(`${API_BASE}/api/leagues/${leagueId}/standings`)
