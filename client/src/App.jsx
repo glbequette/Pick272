@@ -511,33 +511,33 @@ export default function App() {
                             <div style={{ textAlign: 'center', fontSize: '12px', color: '#64748b', fontWeight: '700', letterSpacing: '0.05em' }}>
                               {formattedTime.toUpperCase()}
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '16px' }}>
-                          <button
-                            onClick={() => handleSelectTeam(game.gameId, game.awayTeam)}
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', border: selectedTeam === game.awayTeam ? `2px solid ${awayTheme.primary}` : '1px solid #283548', background: selectedTeam === game.awayTeam ? awayTheme.primary : '#0b0f19', color: selectedTeam === game.awayTeam ? awayTheme.text : '#f1f5f9', boxShadow: selectedTeam === game.awayTeam ? `0 0 16px ${awayTheme.primary}80` : 'none' }}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              <img src={awayTheme.logoUrl} alt={game.awayTeam} style={{ width: '40px', height: '40px', objectFit: 'contain', filter: selectedTeam === game.awayTeam ? 'drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.6))' : 'none' }} />
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                              <span style={{ fontFamily: 'Teko, sans-serif', fontSize: '24px', letterSpacing: '0.5px', lineHeight: '1' }}>{game.awayTeam}</span>
-                            </div>
-                          </button>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '16px' }}>
+                            <button
+                              onClick={() => handleSelectTeam(game.gameId, game.awayTeam)}
+                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', border: selectedTeam === game.awayTeam ? `2px solid ${awayTheme.primary}` : '1px solid #283548', background: selectedTeam === game.awayTeam ? awayTheme.primary : '#0b0f19', color: selectedTeam === game.awayTeam ? awayTheme.text : '#f1f5f9', boxShadow: selectedTeam === game.awayTeam ? `0 0 16px ${awayTheme.primary}80` : 'none' }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <img src={awayTheme.logoUrl} alt={game.awayTeam} style={{ width: '40px', height: '40px', objectFit: 'contain', filter: selectedTeam === game.awayTeam ? 'drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.6))' : 'none' }} />
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                <span style={{ fontFamily: 'Teko, sans-serif', fontSize: '24px', letterSpacing: '0.5px', lineHeight: '1' }}>{game.awayTeam}</span>
+                              </div>
+                            </button>
 
-                          <div style={{ fontFamily: 'Teko, sans-serif', fontSize: '22px', color: '#475569', fontWeight: '700' }}>@</div>
+                            <div style={{ fontFamily: 'Teko, sans-serif', fontSize: '22px', color: '#475569', fontWeight: '700' }}>@</div>
 
-                          <button
-                            onClick={() => handleSelectTeam(game.gameId, game.homeTeam)}
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', border: selectedTeam === game.homeTeam ? `2px solid ${homeTheme.primary}` : '1px solid #283548', background: selectedTeam === game.homeTeam ? homeTheme.primary : '#0b0f19', color: selectedTeam === game.homeTeam ? homeTheme.text : '#f1f5f9', boxShadow: selectedTeam === game.homeTeam ? `0 0 16px ${homeTheme.primary}80` : 'none' }}
-                          >
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                              <span style={{ fontFamily: 'Teko, sans-serif', fontSize: '24px', letterSpacing: '0.5px', lineHeight: '1' }}>{game.homeTeam}</span>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              <img src={homeTheme.logoUrl} alt={game.homeTeam} style={{ width: '40px', height: '40px', objectFit: 'contain', filter: selectedTeam === game.homeTeam ? 'drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.6))' : 'none' }} />
-                            </div>
-                          </button>
-                        </div>
+                            <button
+                              onClick={() => handleSelectTeam(game.gameId, game.homeTeam)}
+                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', border: selectedTeam === game.homeTeam ? `2px solid ${homeTheme.primary}` : '1px solid #283548', background: selectedTeam === game.homeTeam ? homeTheme.primary : '#0b0f19', color: selectedTeam === game.homeTeam ? homeTheme.text : '#f1f5f9', boxShadow: selectedTeam === game.homeTeam ? `0 0 16px ${homeTheme.primary}80` : 'none' }}
+                            >
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                <span style={{ fontFamily: 'Teko, sans-serif', fontSize: '24px', letterSpacing: '0.5px', lineHeight: '1' }}>{game.homeTeam}</span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <img src={homeTheme.logoUrl} alt={game.homeTeam} style={{ width: '40px', height: '40px', objectFit: 'contain', filter: selectedTeam === game.homeTeam ? 'drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.6))' : 'none' }} />
+                              </div>
+                            </button>
+                          </div>
                           </div>
                         );
                       })}
