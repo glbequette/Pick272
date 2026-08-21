@@ -50,7 +50,7 @@ router.post('/register', async (req, res) => {
 
       await resend.emails.send({
       // Change this to your custom domain once it is verified in Resend!
-      from: 'onboarding@resend.dev', 
+      from: 'Pick272 <noreply@pick272.com>',
       to: email,
       subject: 'Welcome to Pick272! Verify your account 🏈',
       html: `
