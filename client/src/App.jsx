@@ -112,7 +112,7 @@ export default function App() {
             userId: user.id, 
             leagueId: activeLeague._id, 
             picks: updatedPicks,
-            isSubmitted: false
+            isSubmitted: true
           })
         });
 
@@ -373,10 +373,6 @@ export default function App() {
                     <div style={{ width: `${progressPercent}%`, background: 'linear-gradient(90deg, #16a34a, #22c55e)', height: '100%', transition: 'width 0.4s' }} />
                   </div>
                 </div>
-
-                <button onClick={handleLockPicks} disabled={submitStatus?.type === 'loading'} style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color: '#0b0f19', fontWeight: '800', fontFamily: 'Teko, sans-serif', fontSize: '18px', cursor: 'pointer' }}>
-                  {submitStatus?.type === 'loading' ? 'LOCKING...' : 'LOCK PICKS'}
-                </button>
               </div>
 
               {submitStatus && (

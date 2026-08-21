@@ -24,9 +24,9 @@ export default function GlobalLeaderboard({ currentUserId }) {
       setLoading(true); // Trigger loading animation when swapping tabs
       
       // Append the active scopeTab to the API request
-      const url = currentUserId
-        ? `VITE_API_URL/api/leaderboard/global?userId=${currentUserId}&scope=${scopeTab}`
-        : `VITE_API_URL/api/leaderboard/global?scope=${scopeTab}`;
+  const url = currentUserId
+      ? `${API_BASE}/api/leaderboard/global?userId=${currentUserId}&scope=${scopeTab}`
+      : `${API_BASE}/api/leaderboard/global?scope=${scopeTab}`;
 
       fetch(url)
         .then((res) => res.json())
