@@ -12,6 +12,8 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   isVerified: { type: Boolean, default: false },
   verificationToken: { type: String },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
   leagues: [{ type: mongoose.Schema.Types.ObjectId, ref: 'League' }],
   friendCode: { type: String, unique: true, uppercase: true },
   

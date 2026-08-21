@@ -1,30 +1,54 @@
-import React, { useState } from 'react';
-
+import React, { useState, useEffect } from 'react';
 
 export default function Auth({ onAuthSuccess }) {
-  const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
-  const [error, setError] = useState('');
+  // Modes: 'login', 'register', 'forgot', 'reset'
+  const [mode, setMode] = useState('login');
+  
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [resetToken, setResetToken] = useState(null);
+  
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
 
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
-  };
+  // Check URL for a reset token on load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('resetToken');
+    if (token) {
+      setResetToken(token);
+      setMode('reset');
+      // Clean up the URL so the token doesn't sit in the address bar
+      window.history.replaceState({}, document.title, "/");
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-    const payload = isLogin
-      ? { email: formData.email, password: formData.password }
-      : { username: formData.username, email: formData.email, password: formData.password };
+    setMessage(null);
 
     try {
+      let endpoint = '';
+      let payload = {};
+
+      if (mode === 'login') {
+        endpoint = '/api/auth/login';
+        payload = { email, password };
+      } else if (mode === 'register') {
+        endpoint = '/api/auth/register';
+        payload = { username, email, password };
+      } else if (mode === 'forgot') {
+        endpoint = '/api/auth/forgot-password';
+        payload = { email };
+      } else if (mode === 'reset') {
+        endpoint = '/api/auth/reset-password';
+        payload = { token: resetToken, newPassword: password };
+      }
+
       const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -32,206 +56,143 @@ export default function Auth({ onAuthSuccess }) {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Authentication failed');
 
-      if (isLogin) {
+      if (!response.ok) {
+        throw new Error(data.error || 'Request failed.');
+      }
+
+      // Handle Success Paths
+      if (mode === 'login') {
         localStorage.setItem('nfl_picker_token', data.token);
         localStorage.setItem('nfl_picker_user', JSON.stringify(data.user));
         onAuthSuccess(data.user);
-      } else {
-        // Switch to login tab and display the email verification instruction
-        setIsLogin(true);
-        setError(data.message); // This will now display: "Registration successful! Please check your email..."
+      } else if (mode === 'register') {
+        setMessage({ type: 'success', text: data.message });
+        setMode('login');
+        setPassword('');
+      } else if (mode === 'forgot') {
+        setMessage({ type: 'success', text: data.message });
+        setMode('login');
+      } else if (mode === 'reset') {
+        setMessage({ type: 'success', text: data.message });
+        setMode('login');
+        setPassword('');
+        setResetToken(null);
       }
+
     } catch (err) {
-      setError(err.message);
+      setMessage({ type: 'error', text: err.message });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <h2 style={styles.title}>{isLogin ? 'WELCOME BACK' : 'CREATE ACCOUNT'}</h2>
-          <p style={styles.subtitle}>Lock in your 272 picks before Week 1 kickoff.</p>
-        </div>
+    <div style={{ maxWidth: '400px', margin: '60px auto', background: '#131c2e', padding: '32px', borderRadius: '16px', border: '1px solid #1e293b', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)' }}>
+      
+      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <h2 style={{ fontFamily: 'Teko, sans-serif', fontSize: '36px', color: '#f8fafc', margin: 0, letterSpacing: '1px' }}>
+          {mode === 'login' ? 'WELCOME BACK' 
+            : mode === 'register' ? 'CREATE ACCOUNT' 
+            : mode === 'forgot' ? 'RESET PASSWORD' 
+            : 'ENTER NEW PASSWORD'}
+        </h2>
+        <p style={{ color: '#94a3b8', fontSize: '14px', margin: '4px 0 0 0' }}>
+          {mode === 'forgot' ? "Enter your email and we'll send a reset link." : "Lock in your 272 picks."}
+        </p>
+      </div>
 
-        <div style={styles.tabContainer}>
-          <button
-            type="button"
-            onClick={() => { setIsLogin(true); setError(''); }}
-            style={{ ...styles.tab, borderBottom: isLogin ? '2px solid #22c55e' : '2px solid transparent', color: isLogin ? '#22c55e' : '#94a3b8' }}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => { setIsLogin(false); setError(''); }}
-            style={{ ...styles.tab, borderBottom: !isLogin ? '2px solid #22c55e' : '2px solid transparent', color: !isLogin ? '#22c55e' : '#94a3b8' }}
-          >
-            Register
-          </button>
+      {message && (
+        <div style={{ padding: '12px', borderRadius: '8px', fontSize: '13px', marginBottom: '20px', textAlign: 'center', background: message.type === 'success' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: message.type === 'success' ? '#4ade80' : '#f87171' }}>
+          {message.text}
         </div>
+      )}
 
-        {error && (
-          <div style={{
-            ...styles.alert,
-            background: error.includes('created') ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-            borderColor: error.includes('created') ? '#22c55e' : '#ef4444',
-            color: error.includes('created') ? '#4ade80' : '#f87171'
-          }}>
-            {error}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        
+        {/* Username Field (Only for Register) */}
+        {mode === 'register' && (
+          <input
+            type="text"
+            placeholder="Username"
+            required
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            style={{ padding: '14px', borderRadius: '8px', border: '1px solid #334155', background: '#0b0f19', color: '#f8fafc', fontSize: '16px', outline: 'none' }}
+          />
+        )}
+
+        {/* Email Field (For Login, Register, and Forgot Password) */}
+        {mode !== 'reset' && (
+          <input
+            type="email"
+            placeholder="Email Address"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ padding: '14px', borderRadius: '8px', border: '1px solid #334155', background: '#0b0f19', color: '#f8fafc', fontSize: '16px', outline: 'none' }}
+          />
+        )}
+
+        {/* Password Field (For Login, Register, and Reset) */}
+        {mode !== 'forgot' && (
+          <input
+            type="password"
+            placeholder={mode === 'reset' ? 'New Password' : 'Password'}
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ padding: '14px', borderRadius: '8px', border: '1px solid #334155', background: '#0b0f19', color: '#f8fafc', fontSize: '16px', outline: 'none' }}
+          />
+        )}
+
+        <button 
+          type="submit" 
+          disabled={loading}
+          style={{ padding: '14px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', color: '#0b0f19', fontWeight: '800', fontFamily: 'Teko, sans-serif', fontSize: '20px', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '8px' }}
+        >
+          {loading ? 'PROCESSING...' : mode === 'login' ? 'SIGN IN' : mode === 'register' ? 'SIGN UP' : mode === 'forgot' ? 'SEND LINK' : 'RESET PASSWORD'}
+        </button>
+      </form>
+
+      {/* Mode Toggles */}
+      <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'center', fontSize: '13px' }}>
+        
+        {(mode === 'login' || mode === 'register') && (
+          <div style={{ color: '#94a3b8' }}>
+            {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+            <span 
+              onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setMessage(null); }} 
+              style={{ color: '#38bdf8', cursor: 'pointer', fontWeight: '700' }}
+            >
+              {mode === 'login' ? 'Sign Up' : 'Sign In'}
+            </span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          {!isLogin && (
-            <div>
-              <label style={styles.label}>USERNAME</label>
-              <input
-                type="text"
-                name="username"
-                required
-                minLength={3}
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="GridironKing"
-                style={styles.input}
-              />
-            </div>
-          )}
-
+        {mode === 'login' && (
           <div>
-            <label style={styles.label}>EMAIL ADDRESS</label>
-            <input
-              type="email"
-              name="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="you@domain.com"
-              style={styles.input}
-            />
+            <span 
+              onClick={() => { setMode('forgot'); setMessage(null); }} 
+              style={{ color: '#94a3b8', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Forgot your password?
+            </span>
           </div>
+        )}
 
+        {(mode === 'forgot' || mode === 'reset') && (
           <div>
-            <label style={styles.label}>PASSWORD</label>
-            <input
-              type="password"
-              name="password"
-              required
-              minLength={6}
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              style={styles.input}
-            />
+            <span 
+              onClick={() => { setMode('login'); setMessage(null); }} 
+              style={{ color: '#94a3b8', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Back to Login
+            </span>
           </div>
+        )}
 
-          <button type="submit" disabled={loading} style={styles.submitBtn}>
-            {loading ? 'AUTHENTICATING...' : isLogin ? 'SIGN IN' : 'REGISTER & START'}
-          </button>
-        </form>
       </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    padding: '40px 16px'
-  },
-  card: {
-    width: '100%',
-    maxWidth: '440px',
-    background: '#131c2e',
-    border: '1px solid #1e293b',
-    borderRadius: '16px',
-    padding: '32px',
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5)'
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '24px'
-  },
-  title: {
-    fontFamily: 'Teko, sans-serif',
-    fontSize: '32px',
-    letterSpacing: '1px',
-    color: '#f8fafc',
-    margin: 0
-  },
-  subtitle: {
-    fontSize: '13px',
-    color: '#94a3b8',
-    marginTop: '4px'
-  },
-  tabContainer: {
-    display: 'flex',
-    borderBottom: '1px solid #1e293b',
-    marginBottom: '24px'
-  },
-  tab: {
-    flex: 1,
-    padding: '12px',
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '600',
-    transition: 'all 0.2s'
-  },
-  alert: {
-    padding: '12px 16px',
-    borderRadius: '8px',
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    fontSize: '13px',
-    marginBottom: '20px',
-    textAlign: 'center'
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '18px'
-  },
-  label: {
-    display: 'block',
-    fontSize: '11px',
-    fontWeight: '700',
-    letterSpacing: '0.05em',
-    color: '#94a3b8',
-    marginBottom: '6px'
-  },
-  input: {
-    width: '100%',
-    padding: '12px 14px',
-    borderRadius: '8px',
-    border: '1px solid #334155',
-    background: '#0b0f19',
-    color: '#f8fafc',
-    fontSize: '14px',
-    outline: 'none',
-    boxSizing: 'border-box'
-  },
-  submitBtn: {
-    width: '100%',
-    padding: '14px',
-    borderRadius: '8px',
-    border: 'none',
-    background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-    color: '#0b0f19',
-    fontWeight: '800',
-    fontFamily: 'Teko, sans-serif',
-    fontSize: '20px',
-    letterSpacing: '1px',
-    cursor: 'pointer',
-    marginTop: '8px',
-    boxShadow: '0 4px 14px 0 rgba(34, 197, 94, 0.35)',
-    transition: 'transform 0.1s'
-  }
-};

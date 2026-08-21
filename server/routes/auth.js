@@ -199,4 +199,83 @@ router.put('/update/:id', async (req, res) => {
   }
 });
 
+
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'If that email exists, a reset link has been sent.' }); // Vague for security
+    }
+
+    // Generate a random 32-character token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    
+    // Save token and set expiration to 1 hour from now
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000;
+    await user.save();
+
+    const FRONTEND_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+    const resetLink = `${FRONTEND_URL}/?resetToken=${resetToken}`;
+
+    // Create transporter inside the route (using your existing email credentials)
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    await transporter.sendMail({
+      from: `"Pick272" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Pick272 - Password Reset Request',
+      html: `
+        <h2>Password Reset Request</h2>
+        <p>You requested a password reset for your Pick272 account.</p>
+        <p>Please click the link below to set a new password. This link will expire in 1 hour.</p>
+        <a href="${resetLink}" style="padding: 10px 20px; background: #38bdf8; color: #0b0f19; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Reset Password</a>
+        <p>If you did not request this, please ignore this email.</p>
+      `
+    });
+
+    res.status(200).json({ message: 'A reset link has been sent to your email.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Server error. Please try again later.' });
+  }
+});
+
+
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    
+    // Find user with matching token that has NOT expired yet
+    const user = await User.findOne({ 
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() } 
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired reset link. Please request a new one.' });
+    }
+
+    // Hash the new password and wipe the tokens
+    const bcrypt = require('bcryptjs');
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: 'Password successfully reset! You can now log in.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Server error. Please try again later.' });
+  }
+});
+
 module.exports = router;
