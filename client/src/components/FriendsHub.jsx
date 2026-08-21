@@ -68,7 +68,7 @@ export default function FriendsHub({ user, onBack }) {
     e.preventDefault();
     setModalLoading(true);
     try {
-      const res = await fetch('${API_BASE}/api/friends/nickname', {
+      const res = await fetch(`${API_BASE}/api/friends/nickname`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id, friendId: selectedFriend._id, nickname: editNickname })
@@ -88,7 +88,7 @@ export default function FriendsHub({ user, onBack }) {
     if (!window.confirm(`Are you sure you want to remove ${selectedFriend.username}?`)) return;
     setModalLoading(true);
     try {
-      const res = await fetch('${API_BASE}/api/friends/remove', {
+      const res = await fetch(`${API_BASE}/api/friends/remove`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.id, friendId: selectedFriend._id })
